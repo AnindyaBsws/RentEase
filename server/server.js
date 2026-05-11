@@ -5,6 +5,7 @@ import cors from "cors";
 import connectDB from "./config/connectDB.js";
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import rentalRoutes from "./routes/rentalRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -17,6 +18,7 @@ app.use(express.json());
 //middlewares
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/rentals", rentalRoutes);
 
 app.get("/", (req, res) => {
   res.json({
