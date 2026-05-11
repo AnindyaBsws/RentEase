@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 
 import MainLayout from "../layouts/MainLayout";
 
@@ -18,6 +18,7 @@ function Dashboard() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [myProducts, setMyProducts] = useState([]);
 
   const handleChange = (e) => {
     setFormData({
@@ -25,6 +26,28 @@ function Dashboard() {
       [e.target.name]: e.target.value,
     });
   };
+
+  const fetchMyProducts = async () => {
+    try {
+        const res = await API.get(
+        "/products/my/products",
+        {
+            headers: {
+            Authorization: `Bearer ${user.token}`,
+            },
+        }
+        );
+
+        setMyProducts(res.data);
+
+    } catch (error) {
+        console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMyProducts();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,6 +75,7 @@ function Dashboard() {
         image: "",
         rentPerDay: "",
       });
+      fetchMyProducts();
 
     } catch (error) {
       console.log(error);
@@ -64,6 +88,28 @@ function Dashboard() {
       setLoading(false);
     }
   };
+
+    const handleDelete = async (id) => {
+        try {
+            await API.delete(
+            `/products/${id}`,
+            {
+                headers: {
+                Authorization: `Bearer ${user.token}`,
+                },
+            }
+            );
+
+            fetchMyProducts();
+
+            alert("Product Deleted");
+
+        } catch (error) {
+            console.log(error);
+
+            alert("Delete Failed");
+        }
+    };
 
   return (
     <MainLayout>
@@ -200,6 +246,64 @@ function Dashboard() {
           </button>
 
         </form>
+            
+            {/* My Products */}
+
+            <div className="mt-20">
+
+            <h2 className="text-4xl font-bold mb-10">
+                My Products
+            </h2>
+
+            {myProducts.length === 0 ? (
+                <p className="text-zinc-500">
+                No products added yet
+                </p>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                {myProducts.map((product) => (
+
+                    <div
+                    key={product._id}
+                    className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden"
+                    >
+
+                    <img
+                        src={product.image}
+                        alt={product.title}
+                        className="w-full h-60 object-cover"
+                    />
+
+                    <div className="p-6">
+
+                        <h3 className="text-2xl font-bold mb-3">
+                        {product.title}
+                        </h3>
+
+                        <p className="text-zinc-400 mb-5">
+                        ₹{product.rentPerDay}/day
+                        </p>
+
+                        <button
+                        onClick={() =>
+                            handleDelete(product._id)
+                        }
+                        className="bg-red-500 hover:bg-red-600 px-5 py-2 rounded-lg"
+                        >
+                        Delete
+                        </button>
+
+                    </div>
+
+                    </div>
+
+                ))}
+
+                </div>
+            )}
+
+            </div>
 
       </div>
 
